@@ -14,7 +14,8 @@ public:
     int framesLeftToLive;
 
     Particle();
-    void update(double, double, double);
+    Particle(double x, double z);
+    bool update(double, double, double);
 
 };
 

@@ -55,10 +55,10 @@ void drawPoint(Particle p) {
     glEnd();
 }
 
-void display()\
+void display()
 {
     glLoadIdentity();
-    gluLookAt(0.0, 100.0, 1000.0,
+    gluLookAt(600.0, 600.0, 1000.0,
               0.0, 0.0, 0.0,
               0.0, 1.0, 0.0);
     // Clear the screen
@@ -86,17 +86,11 @@ void keyboard(unsigned char key, int x, int y) {
         particles.emplace_back(Particle());
     }
     if (key == 'e') {
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-        particles.emplace_back(Particle());
-
+        for (double a = -10; a < 10; a+= 1){
+            for (double b = -10; b < 10; b+= 1){
+                particles.emplace_back(Particle(myRandom() * a + myRandom(), myRandom() * b + myRandom()));
+            }
+        }
     }
     glutPostRedisplay();
 }
@@ -110,36 +104,19 @@ void reshape(int width, int height) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-void makeAxes() {
-// Create a display list for drawing coord axis
-    axisList = glGenLists(1);
-    glNewList(axisList, GL_COMPILE);
-    glLineWidth(2.0);
-    glBegin(GL_LINES);
-    glColor3f(1.0, 0.0, 0.0);       // X axis - red
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(AXIS_SIZE, 0.0, 0.0);
-    glColor3f(0.0, 1.0, 0.0);       // Y axis - green
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, AXIS_SIZE, 0.0);
-    glColor3f(0.0, 0.0, 1.0);       // Z axis - blue
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 0.0, AXIS_SIZE);
-    glEnd();
-    glEndList();
-}
-
-
-
-
 void tick(int x) {
     list<Particle>::iterator it;
-    for(it = particles.begin(); it != particles.end(); ++it) {
-        it->update(myRandom() / 10.0f, -0.025, 0);
+    for(it = particles.begin(); it != particles.end();) {
+        //it->update(myRandom() / 10.0f, -0.025, 0);
+        if (!(it->update(0, -0.035,0))){
+            it = particles.erase(it);
+        }
+        else {
+            ++it;
+        }
     }
-    particles.emplace_back(Particle());
     glutPostRedisplay();
-    glutTimerFunc(1000.0/60.0, tick, 0);
+    glutTimerFunc(1000.0/30.0, tick, 0);
 }
 
 
@@ -153,8 +130,7 @@ void initGraphics(int argc, char *argv[])
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
-    glutTimerFunc(1000.0/60.0, tick, 0);
-    makeAxes();
+    glutTimerFunc(1000.0/30.0, tick, 0);
 }
 
 //
