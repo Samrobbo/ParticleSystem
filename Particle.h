@@ -15,6 +15,7 @@ public:
 
     Particle();
     Particle(double x, double z);
+    Particle(double x, double y, double z);
     bool update(double, double, double);
 
 };

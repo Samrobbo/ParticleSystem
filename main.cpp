@@ -11,6 +11,8 @@
 //
 //////////////////////////////////////////
 
+#define _USE_MATH_DEFINES
+
 #include <cstdlib>
 #include <cstdio>
 #include <ctime>
@@ -19,6 +21,7 @@
 #include <list>
 #include <iterator>
 
+#include <math.h>
 #include <GL/glut.h>
 #include "Particle.h"
 
@@ -58,7 +61,7 @@ void drawPoint(Particle p) {
 void display()
 {
     glLoadIdentity();
-    gluLookAt(600.0, 600.0, 1000.0,
+    gluLookAt(100.0, 300.0, 1000.0,
               0.0, 0.0, 0.0,
               0.0, 1.0, 0.0);
     // Clear the screen
@@ -86,17 +89,16 @@ void keyboard(unsigned char key, int x, int y) {
         particles.emplace_back(Particle());
     }
     if (key == 'e') {
-        for (double a = -10; a < 10; a+= 1){
-            for (double b = -10; b < 10; b+= 1){
-                particles.emplace_back(Particle(myRandom() * a + myRandom(), myRandom() * b + myRandom()));
-            }
+        for (double a = 0; a <= 2*M_PI; a+= (2*M_PI/200)){
+            particles.emplace_back(Particle(4*sin(a), 4*cos(a)));
+            particles.emplace_back(Particle(4*sin(a), 12 ,4*cos(a)));
         }
     }
     glutPostRedisplay();
 }
 
 void reshape(int width, int height) {
-    glClearColor(0.9, 0.9, 0.9, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -108,7 +110,7 @@ void tick(int x) {
     list<Particle>::iterator it;
     for(it = particles.begin(); it != particles.end();) {
         //it->update(myRandom() / 10.0f, -0.025, 0);
-        if (!(it->update(0, -0.035,0))){
+        if (!(it->update(0, -0.16,0))){
             it = particles.erase(it);
         }
         else {
@@ -116,7 +118,7 @@ void tick(int x) {
         }
     }
     glutPostRedisplay();
-    glutTimerFunc(1000.0/30.0, tick, 0);
+    glutTimerFunc(1000.0/60.0, tick, 0);
 }
 
 
@@ -130,7 +132,7 @@ void initGraphics(int argc, char *argv[])
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
-    glutTimerFunc(1000.0/30.0, tick, 0);
+    glutTimerFunc(1000.0/60.0, tick, 0);
 }
 
 //
@@ -139,7 +141,6 @@ void initGraphics(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    particles.emplace_back(Particle());
     srand(time(nullptr));
     initGraphics(argc, argv);
     glEnable(GL_POINT_SMOOTH);
