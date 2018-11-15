@@ -24,23 +24,29 @@
 #include <math.h>
 #include <GL/glut.h>
 #include "Particle.h"
+#include "utility.h"
 
 using namespace std;
 
+// Global Properties
+double particleSize = 10.0f;
+int lifetime = 1000;
+Triple colour = Triple(1, 0, 0);
+double initialPower = 1;
+double gravity = -0.13;
+int particlesInSystem = 0;
 
-int lifetime = 400;
 list <Particle> particles;
 
 void drawPoint(Particle p) {
     glPointSize(p.size);
     glBegin(GL_POINTS);
-    glColor4f(p.colour[0], p.colour[1], p.colour[2], p.alpha);
-    glVertex3f(p.position[0], p.position[1], p.position[2]);
+    glColor4f(p.colour.first, p.colour.second, p.colour.third, p.alpha);
+    glVertex3f(p.position.first, p.position.second, p.position.third);
     glEnd();
 }
 
-void display()
-{
+void display() {
     glLoadIdentity();
     gluLookAt(400.0, 1200.0, 2000.0,
               0.0, 0.0, 0.0,
@@ -61,19 +67,21 @@ void keyboard(unsigned char key, int x, int y) {
         cout << particles.size();
         exit(0);
     }
-    if (key == 32) {
+    else if (key == 32) {
         particles.clear();
-        particles.emplace_back(Particle());
     }
-    if (key == 'e') {
-        for (double a = 0; a <= 2*M_PI; a+= (2*M_PI/200)){
-            particles.emplace_back(Particle(4*sin(a), 4*cos(a)));
+    else if (key == 'r') {
+        colour = Triple(myRandomPos(), myRandomPos(), myRandomPos());
+    }
+    else if (key == 'e') {
+        for (double a = 0; a < 2*M_PI; a+= (2*M_PI/100)){
+            particles.emplace_back(Particle(Triple(4*sin(a), 8, 4*cos(a)), colour, particleSize, lifetime));
         }
     }
-    if (key == 's') {
-        for (double a = -5; a <= 5; a+= 1){
-            for (double b = -5; b <= 5; b += 1) {
-                particles.emplace_back(Particle(a, b));
+    else if (key == 's') {
+        for (double a = -2; a <= 2; a+= 1){
+            for (double b = -2; b <= 2; b += 1) {
+                particles.emplace_back(Particle(Triple(a, 8, b), colour, particleSize, lifetime));
             }
         }
     }
@@ -89,10 +97,13 @@ void reshape(int width, int height) {
     glMatrixMode(GL_MODELVIEW);
 }
 
+//list<int> framerates = {60,60,60};
+//int frameCount = 0;
+
 void tick(int x) {
     list<Particle>::iterator it;
     for(it = particles.begin(); it != particles.end();) {
-        if (!(it->update(0, -0.16,-0.05))){
+        if (!(it->update(Triple(0, gravity, 0)))) {
             it = particles.erase(it);
         }
         else {
@@ -100,6 +111,21 @@ void tick(int x) {
         }
     }
     glutPostRedisplay();
+
+
+//    frameCount++;
+//    long t = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now().time_since_epoch()).count();
+//    t = t / 1000000;
+//    if (t != previousTime) {
+//        int average = 0;
+//
+//        cout << average << "FPS (average)" << endl;
+//        framerates.erase(framerates.begin());
+//        framerates.emplace_back(frameCount);
+//        frameCount = 0;
+//        previousTime = t;
+//    }
+
     glutTimerFunc(1000.0/60.0, tick, 0);
 }
 

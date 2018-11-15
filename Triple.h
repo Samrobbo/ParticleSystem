@@ -13,6 +13,7 @@ public:
     Triple();
     Triple(double, double, double);
     Triple operator+ (const Triple&) const;
-    Triple operator* (const int) const;
-    };
+    Triple operator* (const double) const;
+    Triple operator/ (const double) const;
+};
 #endif //PARTICLESYSTEM_TRIPLE_H

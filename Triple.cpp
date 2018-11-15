@@ -25,10 +25,19 @@ Triple Triple::operator+ (const Triple& t) const {
     return result;
 }
 
-Triple Triple::operator* (const int scalar) const {
+Triple Triple::operator* (const double scalar) const {
     Triple result;
     result.first = (this->first * scalar);
     result.second = (this->second * scalar);
     result.third = (this->third * scalar);
     return result;
 }
+
+Triple Triple::operator/ (const double scalar) const {
+    Triple result;
+    result.first = (this->first / scalar);
+    result.second = (this->second / scalar);
+    result.third = (this->third / scalar);
+    return result;
+}
+

@@ -5,19 +5,21 @@
 #ifndef PARTICLESYSTEM_PARTICLE_H
 #define PARTICLESYSTEM_PARTICLE_H
 
+#include "Triple.h"
+
 class Particle {
 public:
-    double velocity[3];
-    double position[3];
-    double colour[3];
+    Triple velocity;
+    Triple position;
+    Triple colour;
     double size;
     double alpha;
     int framesLeftToLive;
+    int startingLifetime;
 
-    Particle();
-    Particle(double, double);
-    Particle(double, double, double);
-    bool update(double, double, double);
+    Particle(Triple, Triple, double, int);
+    Particle(Triple, Triple, Triple, double, int);
+    bool update(Triple);
 
 };
 
