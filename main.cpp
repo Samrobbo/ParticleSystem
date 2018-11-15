@@ -27,33 +27,14 @@
 
 using namespace std;
 
-// Display list for coordinate axis
-GLuint axisList;
 
-int AXIS_SIZE= 200;
-int axisEnabled= 1;
+int lifetime = 400;
 list <Particle> particles;
-
-double myRandom()
-//Return random double within range [-1,1]
-{
-    double r = ((rand()/(double)RAND_MAX) * 2) - 1;
-    return r;
-}
-
-long previousFrameDrawnTime = 0;
-
-long fps() {
-    long frameDrawnTime = chrono::duration_cast<chrono::microseconds >(chrono::system_clock::now().time_since_epoch()).count();
-    long timeElapsed =  frameDrawnTime - previousFrameDrawnTime;
-    previousFrameDrawnTime = frameDrawnTime;
-    return (long)(1.0f / (timeElapsed / 1000000.0f));
-}
 
 void drawPoint(Particle p) {
     glPointSize(p.size);
     glBegin(GL_POINTS);
-    glColor3f(p.colour[0], p.colour[1], p.colour[2]);
+    glColor4f(p.colour[0], p.colour[1], p.colour[2], p.alpha);
     glVertex3f(p.position[0], p.position[1], p.position[2]);
     glEnd();
 }
@@ -61,15 +42,11 @@ void drawPoint(Particle p) {
 void display()
 {
     glLoadIdentity();
-    gluLookAt(100.0, 300.0, 1000.0,
+    gluLookAt(400.0, 1200.0, 2000.0,
               0.0, 0.0, 0.0,
               0.0, 1.0, 0.0);
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // If enabled, draw coordinate axis
-    if(axisEnabled) {
-        glCallList(axisList);
-    }
 
     list<Particle>::iterator it;
     for(it = particles.begin(); it != particles.end(); ++it) {
@@ -91,7 +68,13 @@ void keyboard(unsigned char key, int x, int y) {
     if (key == 'e') {
         for (double a = 0; a <= 2*M_PI; a+= (2*M_PI/200)){
             particles.emplace_back(Particle(4*sin(a), 4*cos(a)));
-            particles.emplace_back(Particle(4*sin(a), 12 ,4*cos(a)));
+        }
+    }
+    if (key == 's') {
+        for (double a = -5; a <= 5; a+= 1){
+            for (double b = -5; b <= 5; b += 1) {
+                particles.emplace_back(Particle(a, b));
+            }
         }
     }
     glutPostRedisplay();
@@ -109,8 +92,7 @@ void reshape(int width, int height) {
 void tick(int x) {
     list<Particle>::iterator it;
     for(it = particles.begin(); it != particles.end();) {
-        //it->update(myRandom() / 10.0f, -0.025, 0);
-        if (!(it->update(0, -0.16,0))){
+        if (!(it->update(0, -0.16,-0.05))){
             it = particles.erase(it);
         }
         else {
@@ -135,14 +117,12 @@ void initGraphics(int argc, char *argv[])
     glutTimerFunc(1000.0/60.0, tick, 0);
 }
 
-//
-
-
-
 int main(int argc, char *argv[])
 {
     srand(time(nullptr));
     initGraphics(argc, argv);
+    glEnable(GL_BLEND);
     glEnable(GL_POINT_SMOOTH);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glutMainLoop();
 }

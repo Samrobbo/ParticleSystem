@@ -11,11 +11,12 @@ public:
     double position[3];
     double colour[3];
     double size;
+    double alpha;
     int framesLeftToLive;
 
     Particle();
-    Particle(double x, double z);
-    Particle(double x, double y, double z);
+    Particle(double, double);
+    Particle(double, double, double);
     bool update(double, double, double);
 
 };

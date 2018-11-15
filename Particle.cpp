@@ -4,14 +4,8 @@
 
 #include <cstdlib>
 #include "Particle.h"
+#include "utility.h"
 using namespace std;
-
-double myRandomPos()
-//Return random double within range [0,1]
-{
-    double r = ((rand()/(double)RAND_MAX));
-    return r;
-}
 
 Particle::Particle() {
     this->position[0] = 0;
@@ -28,6 +22,7 @@ Particle::Particle() {
     this->colour[2] = myRandomPos();
 
     this->size = myRandomPos() * 10.0f;
+    this->alpha = 1.0f;
 
     this->framesLeftToLive = 240;
 
@@ -42,13 +37,14 @@ Particle::Particle(double x, double z) {
     this->velocity[1] = 8;
     this->velocity[2] = z;
 
-
+    // Rainbow colour
     this->colour[0] = myRandomPos();
     this->colour[1] = 40;
     this->colour[2] = 40;
 
+    this->alpha = 1.0f;
     this->size = 10.0f;
-    this->framesLeftToLive = 600;
+    this->framesLeftToLive = 400;
 
 }
 
@@ -66,8 +62,9 @@ Particle::Particle(double x, double y, double z) {
     this->colour[1] = 80;
     this->colour[2] = 80;
 
+    this->alpha = 1.0f;
     this->size = 10.0f;
-    this->framesLeftToLive = 600;
+    this->framesLeftToLive = 400;
 
 }
 
@@ -76,6 +73,8 @@ bool Particle::update(double accelerationx, double accelerationy, double acceler
     if (this->framesLeftToLive <= 0) {
         return false;
     }
+
+    this->alpha = this->framesLeftToLive / 400.0;
 
 
     this->velocity[0] = this->velocity[0] + accelerationx;
@@ -90,7 +89,7 @@ bool Particle::update(double accelerationx, double accelerationy, double acceler
         this->position[1] = -this->position[1];
 
         this->velocity[0] *= 0.9;
-        this->velocity[1] *= -0.7;
+        this->velocity[1] *= -0.9;
         this->velocity[2] *= 0.9;
     }
     return true;
