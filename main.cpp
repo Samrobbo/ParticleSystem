@@ -29,14 +29,15 @@
 using namespace std;
 
 // Global Properties
-double particleSize = 10.0f;
-int lifetime = 1000;
+double particleSize = 5.0f;
+int lifetime = 600;
 Triple colour = Triple(1, 0, 0);
 double initialPower = 1;
 double gravity = -0.13;
-int particlesInSystem = 0;
-
+enum Shape{FILLED_SQUARE, CIRCLE, SQUARE};
+Shape emissionShape = CIRCLE;
 list <Particle> particles;
+int shapeDensity = 50;
 
 void drawPoint(Particle p) {
     glPointSize(p.size);
@@ -59,31 +60,61 @@ void display() {
         drawPoint(*it);
     }
     glutSwapBuffers();
-
 }
 
 void keyboard(unsigned char key, int x, int y) {
-    if (key == 27) {
-        cout << particles.size();
-        exit(0);
-    }
-    else if (key == 32) {
-        particles.clear();
-    }
-    else if (key == 'r') {
-        colour = Triple(myRandomPos(), myRandomPos(), myRandomPos());
-    }
-    else if (key == 'e') {
-        for (double a = 0; a < 2*M_PI; a+= (2*M_PI/100)){
-            particles.emplace_back(Particle(Triple(4*sin(a), 8, 4*cos(a)), colour, particleSize, lifetime));
-        }
-    }
-    else if (key == 's') {
-        for (double a = -2; a <= 2; a+= 1){
-            for (double b = -2; b <= 2; b += 1) {
-                particles.emplace_back(Particle(Triple(a, 8, b), colour, particleSize, lifetime));
-            }
-        }
+    switch (key) {
+        case '1':
+            emissionShape = CIRCLE;
+            break;
+        case '2':
+            emissionShape = FILLED_SQUARE;
+            break;
+        case 'c':
+            colour = Triple(myRandomPos(), myRandomPos(), myRandomPos());
+            break;
+        case 'l':
+            lifetime -= 30;
+            if (lifetime < 30)
+                lifetime = 30;
+            break;
+        case 'L':
+            lifetime += 30;
+            break;
+        case 'd':
+            shapeDensity -= 10;
+            if (shapeDensity < 10)
+                shapeDensity = 10;
+            break;
+        case 'D':
+            shapeDensity += 5;
+            break;
+        case 'g':
+            gravity += 0.1;
+            break;
+        case 'G':
+            gravity -= 0.1;
+            break;
+        case 's':
+            particleSize -= 1;
+            if (particleSize < 1)
+                particleSize = 1;
+            break;
+        case 'S':
+            particleSize += 1;
+            break;
+        case 'p':
+            initialPower -= 0.1;
+            break;
+        case 'P':
+            initialPower += 0.1;
+            break;
+        case 32:
+            particles.clear();
+            break;
+        case 27:
+            cout << particles.size();
+            exit(0);
     }
     glutPostRedisplay();
 }
@@ -110,6 +141,24 @@ void tick(int x) {
             ++it;
         }
     }
+
+    switch(emissionShape){
+        case CIRCLE:
+            for (double a = 0; a < 2*M_PI; a+= (2*M_PI/shapeDensity)){
+                particles.emplace_back(Particle(Triple(4*sin(a), 8, 4*cos(a)) * initialPower, colour, particleSize, lifetime));
+            }
+            break;
+        case SQUARE:
+        case FILLED_SQUARE:
+            double increment = sqrt(shapeDensity) / 9.0;
+            for (double a = -4; a <= 4; a+= increment){
+                for (double b = -4; b <= 4; b += increment) {
+                    particles.emplace_back(Particle(Triple(a, 8, b) * initialPower, colour, particleSize, lifetime));
+                }
+            }
+            break;
+    }
+
     glutPostRedisplay();
 
 
@@ -126,7 +175,7 @@ void tick(int x) {
 //        previousTime = t;
 //    }
 
-    glutTimerFunc(1000.0/60.0, tick, 0);
+    glutTimerFunc(1000.0/30.0, tick, 0);
 }
 
 
@@ -140,7 +189,7 @@ void initGraphics(int argc, char *argv[])
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
-    glutTimerFunc(1000.0/60.0, tick, 0);
+    glutTimerFunc(1000.0/30.0, tick, 0);
 }
 
 int main(int argc, char *argv[])
