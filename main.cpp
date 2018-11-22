@@ -36,15 +36,34 @@ double initialPower = 1;
 double gravity = -0.13;
 enum Shape{FILLED_SQUARE, CIRCLE, SQUARE};
 Shape emissionShape = CIRCLE;
-list <Particle> particles;
+bool renderAsLine = false;
 int shapeDensity = 50;
+int framesPerEmission = 10;
 
-void drawPoint(Particle p) {
-    glPointSize(p.size);
-    glBegin(GL_POINTS);
+list <Particle> particles;
+
+int targetFPS = 60.0;
+
+void drawLine(Particle p) {
+    glLineWidth(p.size / 2);
+    glBegin(GL_LINES);
     glColor4f(p.colour.first, p.colour.second, p.colour.third, p.alpha);
+    glVertex3f(p.oldPosition.first, p.oldPosition.second, p.oldPosition.third);
     glVertex3f(p.position.first, p.position.second, p.position.third);
     glEnd();
+}
+
+void drawPoint(Particle p) {
+    if (renderAsLine) {
+        drawLine(p);
+    }
+    else {
+        glPointSize(p.size);
+        glBegin(GL_POINTS);
+        glColor4f(p.colour.first, p.colour.second, p.colour.third, p.alpha);
+        glVertex3f(p.position.first, p.position.second, p.position.third);
+        glEnd();
+    }
 }
 
 void display() {
@@ -82,7 +101,7 @@ void keyboard(unsigned char key, int x, int y) {
             lifetime += 30;
             break;
         case 'd':
-            shapeDensity -= 10;
+            shapeDensity -= 5;
             if (shapeDensity < 10)
                 shapeDensity = 10;
             break;
@@ -90,10 +109,10 @@ void keyboard(unsigned char key, int x, int y) {
             shapeDensity += 5;
             break;
         case 'g':
-            gravity += 0.1;
+            gravity += 0.05;
             break;
         case 'G':
-            gravity -= 0.1;
+            gravity -= 0.05;
             break;
         case 's':
             particleSize -= 1;
@@ -108,6 +127,35 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         case 'P':
             initialPower += 0.1;
+            break;
+        case 'E':
+            framesPerEmission -= 1;
+            if (framesPerEmission < 1) {
+                framesPerEmission = 1;
+            }
+            break;
+        case 'e':
+            framesPerEmission += 1;
+            if (framesPerEmission > 20) {
+                framesPerEmission = 20;
+            }
+            break;
+        case 't':
+        case 'T':
+            renderAsLine = !renderAsLine;
+            break;
+        case 'r':
+        case 'R':
+            particleSize = 5.0f;
+            lifetime = 600;
+            colour = Triple(1, 0, 0);
+            initialPower = 1;
+            gravity = -0.13;
+            emissionShape = CIRCLE;
+            renderAsLine = false;
+            shapeDensity = 50;
+            framesPerEmission = 10;
+            particles.clear();
             break;
         case 32:
             particles.clear();
@@ -131,32 +179,37 @@ void reshape(int width, int height) {
 //list<int> framerates = {60,60,60};
 //int frameCount = 0;
 
+int frameCount = 0;
 void tick(int x) {
+    frameCount++;
     list<Particle>::iterator it;
-    for(it = particles.begin(); it != particles.end();) {
+    for (it = particles.begin(); it != particles.end();) {
         if (!(it->update(Triple(0, gravity, 0)))) {
             it = particles.erase(it);
-        }
-        else {
+        } else {
             ++it;
         }
     }
 
-    switch(emissionShape){
-        case CIRCLE:
-            for (double a = 0; a < 2*M_PI; a+= (2*M_PI/shapeDensity)){
-                particles.emplace_back(Particle(Triple(4*sin(a), 8, 4*cos(a)) * initialPower, colour, particleSize, lifetime));
-            }
-            break;
-        case SQUARE:
-        case FILLED_SQUARE:
-            double increment = sqrt(shapeDensity) / 9.0;
-            for (double a = -4; a <= 4; a+= increment){
-                for (double b = -4; b <= 4; b += increment) {
-                    particles.emplace_back(Particle(Triple(a, 8, b) * initialPower, colour, particleSize, lifetime));
+    if (frameCount >= framesPerEmission) {
+        frameCount = 0;
+        switch (emissionShape) {
+            case CIRCLE:
+                for (double a = 0; a < 2 * M_PI; a += (2 * M_PI / shapeDensity)) {
+                    particles.emplace_back(
+                            Particle(Triple(4 * sin(a), 8, 4 * cos(a)) * initialPower, colour, particleSize, lifetime));
                 }
-            }
-            break;
+                break;
+            case SQUARE:
+            case FILLED_SQUARE:
+                double increment = 9.0 / sqrt(shapeDensity);
+                for (double a = -4; a <= 4; a += increment) {
+                    for (double b = -4; b <= 4; b += increment) {
+                        particles.emplace_back(Particle(Triple(a, 8, b) * initialPower, colour, particleSize, lifetime));
+                    }
+                }
+                break;
+        }
     }
 
     glutPostRedisplay();
@@ -175,7 +228,7 @@ void tick(int x) {
 //        previousTime = t;
 //    }
 
-    glutTimerFunc(1000.0/30.0, tick, 0);
+    glutTimerFunc(1000.0/targetFPS, tick, 0);
 }
 
 
@@ -189,7 +242,7 @@ void initGraphics(int argc, char *argv[])
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
-    glutTimerFunc(1000.0/30.0, tick, 0);
+    glutTimerFunc(1000.0/targetFPS, tick, 0);
 }
 
 int main(int argc, char *argv[])

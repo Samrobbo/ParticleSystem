@@ -11,7 +11,9 @@ class Particle {
 public:
     Triple velocity;
     Triple position;
+    Triple oldPosition;
     Triple colour;
+
     double size;
     double alpha;
     int framesLeftToLive;
