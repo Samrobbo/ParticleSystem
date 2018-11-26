@@ -39,6 +39,7 @@ Shape emissionShape = CIRCLE;
 bool renderAsLine = false;
 int shapeDensity = 50;
 int framesPerEmission = 10;
+double zoomFactor = 1.0;
 
 list <Particle> particles;
 
@@ -68,7 +69,7 @@ void drawPoint(Particle p) {
 
 void display() {
     glLoadIdentity();
-    gluLookAt(400.0, 1200.0, 2000.0,
+    gluLookAt(400.0 * zoomFactor, 1200.0 * zoomFactor, 2000.0 * zoomFactor,
               0.0, 0.0, 0.0,
               0.0, 1.0, 0.0);
     // Clear the screen
@@ -157,6 +158,18 @@ void keyboard(unsigned char key, int x, int y) {
             framesPerEmission = 10;
             particles.clear();
             break;
+        case 'z':
+            zoomFactor-= 0.1;
+            if (zoomFactor < 0.3) {
+                zoomFactor = 0.3;
+            }
+            break;
+        case 'Z':
+            zoomFactor+= 0.1;
+            if (zoomFactor > 2.5) {
+                zoomFactor = 2.5;
+            }
+            break;
         case 32:
             particles.clear();
             break;
@@ -178,7 +191,6 @@ void reshape(int width, int height) {
 
 //list<int> framerates = {60,60,60};
 //int frameCount = 0;
-
 int frameCount = 0;
 void tick(int x) {
     frameCount++;
