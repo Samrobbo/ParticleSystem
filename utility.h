@@ -6,23 +6,13 @@
 #define PARTICLESYSTEM_UTILITY_H
 
 #include <cstdlib>
+#include <fstream>
 
-double myRandomPosOrNeg()
-//Return random double within range [-1,1]
-{
-    double r = ((rand()/(double)RAND_MAX) * 2) - 1;
-    return r;
-}
+double myRandomPosOrNeg();
+double myRandomPos();
+double myRandomNeg();
 
-double myRandomPos()
-//Return random double within range [0,1]
-{
-    double r = ((rand()/(double)RAND_MAX));
-    return r;
-}
+void writeToFile(std::string filename, int x);
 
-double myRandomNeg() {
-    return -myRandomPos();
-}
 
 #endif //PARTICLESYSTEM_UTILITY_H

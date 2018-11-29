@@ -189,8 +189,9 @@ void reshape(int width, int height) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-//list<int> framerates = {60,60,60};
-//int frameCount = 0;
+long previousTime = 0;
+int FPSCounter = 0;
+
 int frameCount = 0;
 void tick(int x) {
     frameCount++;
@@ -225,20 +226,20 @@ void tick(int x) {
     }
 
     glutPostRedisplay();
+    FPSCounter++;
 
+    // time in seconds
+    long t = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    t = t / 1000000;
+    if (t != previousTime) {
+        cout << "FPS :: " << FPSCounter << " \t Particles :: " << particles.size() << endl;
 
-//    frameCount++;
-//    long t = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now().time_since_epoch()).count();
-//    t = t / 1000000;
-//    if (t != previousTime) {
-//        int average = 0;
-//
-//        cout << average << "FPS (average)" << endl;
-//        framerates.erase(framerates.begin());
-//        framerates.emplace_back(frameCount);
-//        frameCount = 0;
-//        previousTime = t;
-//    }
+        // Calculate FPS
+        // Add FPS and # of particles to datastructure
+
+        FPSCounter = 0;
+        previousTime = t;
+    }
 
     glutTimerFunc(1000.0/targetFPS, tick, 0);
 }

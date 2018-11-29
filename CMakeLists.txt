@@ -20,5 +20,5 @@ if(NOT OPENGL_FOUND)
     message(ERROR "OPENGL not found!")
 endif(NOT OPENGL_FOUND)
 
-add_executable(ParticleSystem main.cpp Particle.cpp Particle.h utility.h Triple.cpp Triple.h)
+add_executable(ParticleSystem main.cpp Particle.cpp Particle.h utility.h Triple.cpp Triple.h utility.cpp)
 target_link_libraries(ParticleSystem ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
