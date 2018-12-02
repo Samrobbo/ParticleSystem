@@ -10,7 +10,7 @@ using namespace std;
 Particle::Particle(Triple startingVelocity, Triple colour, double size, int lifetime) {
     this->position = Triple(0,60,0);
     this->velocity = startingVelocity;
-    this->oldPosition = Triple(0,0,0);
+    this->oldPosition = Triple(0,60,0);
     this->colour = colour;
     this->size = size;
     this->startingLifetime = lifetime;
@@ -21,7 +21,7 @@ Particle::Particle(Triple startingVelocity, Triple colour, double size, int life
 Particle::Particle(Triple startingPosition, Triple startingVelocity, Triple colour, double size, int lifetime) {
     this->position = startingPosition;
     this->velocity = startingVelocity;
-    this->oldPosition = Triple(0,0,0);
+    this->oldPosition = Triple(0,60,0);
     this->colour = colour;
     this->size = size;
     this->startingLifetime = lifetime;

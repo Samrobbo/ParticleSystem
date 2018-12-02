@@ -4,6 +4,7 @@
 
 #include "utility.h"
 
+
 double myRandomPosOrNeg()
 //Return random double within range [-1,1]
 {
@@ -24,11 +25,12 @@ double myRandomNeg()
     return -myRandomPos();
 }
 
-void writeToFile(std::string filename, int x) {
+void writeToFile(std::string filename, std::list<std::string> data) {
 
 
-    std::ofstream currentFile;
-    currentFile.open("C:\\Users\\sam_r\\University\\Graphics\\ParticleSystem\\" + filename + ".txt");
-    currentFile << x << std::endl;
+    std::ofstream currentFile("C:\\Users\\sam_r\\University\\Graphics\\ParticleSystem\\" + filename + ".txt");
+    for (auto line : data) {
+        currentFile << line << std::endl;
+    }
     currentFile.close();
 }

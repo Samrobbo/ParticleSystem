@@ -7,12 +7,16 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <string>
+#include <list>
+#include <iterator>
+#include <iostream>
 
 double myRandomPosOrNeg();
 double myRandomPos();
 double myRandomNeg();
 
-void writeToFile(std::string filename, int x);
+void writeToFile(std::string filename, std::list<std::string> data);
 
 
 #endif //PARTICLESYSTEM_UTILITY_H

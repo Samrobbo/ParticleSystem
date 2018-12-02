@@ -34,6 +34,7 @@ int lifetime = 600;
 Triple colour = Triple(1, 0, 0);
 double initialPower = 1;
 double gravity = -0.13;
+double wind = 0.0;
 enum Shape{FILLED_SQUARE, CIRCLE, SQUARE};
 Shape emissionShape = CIRCLE;
 bool renderAsLine = false;
@@ -41,9 +42,15 @@ int shapeDensity = 50;
 int framesPerEmission = 10;
 double zoomFactor = 1.0;
 
+long previousTime = 0;
+int FPSCounter = 0;
+int emissionFrameCount = 0;
+
+list<string> fpsData;
+
 list <Particle> particles;
 
-int targetFPS = 60.0;
+int targetFPS = 180.0;
 
 void drawLine(Particle p) {
     glLineWidth(p.size / 2);
@@ -55,15 +62,18 @@ void drawLine(Particle p) {
 }
 
 void drawPoint(Particle p) {
+    glPointSize(p.size);
+    glBegin(GL_POINTS);
+    glColor4f(p.colour.first, p.colour.second, p.colour.third, p.alpha);
+    glVertex3f(p.position.first, p.position.second, p.position.third);
+    glEnd();
+}
+
+void drawParticle(Particle p) {
     if (renderAsLine) {
         drawLine(p);
-    }
-    else {
-        glPointSize(p.size);
-        glBegin(GL_POINTS);
-        glColor4f(p.colour.first, p.colour.second, p.colour.third, p.alpha);
-        glVertex3f(p.position.first, p.position.second, p.position.third);
-        glEnd();
+    } else {
+        drawPoint(p);
     }
 }
 
@@ -77,7 +87,7 @@ void display() {
 
     list<Particle>::iterator it;
     for(it = particles.begin(); it != particles.end(); ++it) {
-        drawPoint(*it);
+        drawParticle(*it);
     }
     glutSwapBuffers();
 }
@@ -89,6 +99,9 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         case '2':
             emissionShape = FILLED_SQUARE;
+            break;
+        case '3':
+            emissionShape = SQUARE;
             break;
         case 'c':
             colour = Triple(myRandomPos(), myRandomPos(), myRandomPos());
@@ -156,7 +169,14 @@ void keyboard(unsigned char key, int x, int y) {
             renderAsLine = false;
             shapeDensity = 50;
             framesPerEmission = 10;
+            wind = 0.0;
             particles.clear();
+            break;
+        case 'w':
+            wind -= 0.004;
+            break;
+        case 'W':
+            wind += 0.004;
             break;
         case 'z':
             zoomFactor-= 0.1;
@@ -189,23 +209,12 @@ void reshape(int width, int height) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-long previousTime = 0;
-int FPSCounter = 0;
+void emitShape() {
+    emissionFrameCount++;
 
-int frameCount = 0;
-void tick(int x) {
-    frameCount++;
-    list<Particle>::iterator it;
-    for (it = particles.begin(); it != particles.end();) {
-        if (!(it->update(Triple(0, gravity, 0)))) {
-            it = particles.erase(it);
-        } else {
-            ++it;
-        }
-    }
-
-    if (frameCount >= framesPerEmission) {
-        frameCount = 0;
+    if (emissionFrameCount >= framesPerEmission) {
+        emissionFrameCount = 0;
+        double increment = 0;
         switch (emissionShape) {
             case CIRCLE:
                 for (double a = 0; a < 2 * M_PI; a += (2 * M_PI / shapeDensity)) {
@@ -214,8 +223,18 @@ void tick(int x) {
                 }
                 break;
             case SQUARE:
+                increment = 9.0 / sqrt(shapeDensity);
+                for (double a = -4; a <= 4; a += increment) {
+                    particles.emplace_back(Particle(Triple(a, 8, -4) * initialPower, colour, particleSize, lifetime));
+                    particles.emplace_back(Particle(Triple(a, 8, 4) * initialPower, colour, particleSize, lifetime));
+                }
+                for (double a = -4; a <= 4; a += increment) {
+                    particles.emplace_back(Particle(Triple(-4, 8, a) * initialPower, colour, particleSize, lifetime));
+                    particles.emplace_back(Particle(Triple(4, 8, a) * initialPower, colour, particleSize, lifetime));
+                }
+                break;
             case FILLED_SQUARE:
-                double increment = 9.0 / sqrt(shapeDensity);
+                increment = 9.0 / sqrt(shapeDensity);
                 for (double a = -4; a <= 4; a += increment) {
                     for (double b = -4; b <= 4; b += increment) {
                         particles.emplace_back(Particle(Triple(a, 8, b) * initialPower, colour, particleSize, lifetime));
@@ -224,22 +243,40 @@ void tick(int x) {
                 break;
         }
     }
+}
+
+
+
+void tick(int x) {
+    list<Particle>::iterator it;
+    for (it = particles.begin(); it != particles.end();) {
+        if (!(it->update(Triple(wind, gravity, 0)))) {
+            it = particles.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    emitShape();
 
     glutPostRedisplay();
     FPSCounter++;
 
-    // time in seconds
-    long t = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now().time_since_epoch()).count();
-    t = t / 1000000;
-    if (t != previousTime) {
-        cout << "FPS :: " << FPSCounter << " \t Particles :: " << particles.size() << endl;
-
-        // Calculate FPS
-        // Add FPS and # of particles to datastructure
-
-        FPSCounter = 0;
-        previousTime = t;
-    }
+//    // time in seconds
+//    long t = chrono::duration_cast<chrono::milliseconds >(chrono::system_clock::now().time_since_epoch()).count();
+////    t = t / 1000000;
+//    long changeInTime = t - previousTime;
+//
+//    fpsData.emplace_back(to_string(changeInTime) + "," + to_string(particles.size()));
+////    if (t != previousTime) {
+//////        cout << "FPS :: " << FPSCounter << " \t Particles :: " << particles.size() << endl;
+////        // Calculate FPS
+////        // Add FPS and # of particles to datastructure
+////        fpsData.emplace_back(to_string(FPSCounter) + "," + to_string(particles.size()));
+////
+////        FPSCounter = 0;
+//        previousTime = t;
+////    }
 
     glutTimerFunc(1000.0/targetFPS, tick, 0);
 }
