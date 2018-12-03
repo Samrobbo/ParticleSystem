@@ -47,6 +47,7 @@ int FPSCounter = 0;
 int emissionFrameCount = 0;
 
 list<string> fpsData;
+list<string> frameData;
 
 list <Particle> particles;
 
@@ -245,7 +246,24 @@ void emitShape() {
     }
 }
 
+void dataTracker() {
+    FPSCounter++;
+    long t = chrono::duration_cast<chrono::milliseconds >(chrono::system_clock::now().time_since_epoch()).count();
+    long seconds = t / 1000;
+    long changeInTime = t - previousTime;
+    // Time per frame vs particles data
+    frameData.emplace_back(to_string(changeInTime) + "," + to_string(particles.size()));
 
+    if (seconds >= (previousTime / 1000)) {
+        // Frames per second vs particles data
+        fpsData.emplace_back(to_string(FPSCounter) + "," + to_string(particles.size()));
+
+        FPSCounter = 0;
+        previousTime = t;
+
+    }
+
+}
 
 void tick(int x) {
     list<Particle>::iterator it;
@@ -260,27 +278,11 @@ void tick(int x) {
     emitShape();
 
     glutPostRedisplay();
-    FPSCounter++;
 
-//    // time in seconds
-//    long t = chrono::duration_cast<chrono::milliseconds >(chrono::system_clock::now().time_since_epoch()).count();
-////    t = t / 1000000;
-//    long changeInTime = t - previousTime;
-//
-//    fpsData.emplace_back(to_string(changeInTime) + "," + to_string(particles.size()));
-////    if (t != previousTime) {
-//////        cout << "FPS :: " << FPSCounter << " \t Particles :: " << particles.size() << endl;
-////        // Calculate FPS
-////        // Add FPS and # of particles to datastructure
-////        fpsData.emplace_back(to_string(FPSCounter) + "," + to_string(particles.size()));
-////
-////        FPSCounter = 0;
-//        previousTime = t;
-////    }
+    dataTracker();
 
     glutTimerFunc(1000.0/targetFPS, tick, 0);
 }
-
 
 void initGraphics(int argc, char *argv[])
 {
