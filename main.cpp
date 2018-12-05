@@ -43,6 +43,7 @@ int framesPerEmission = 10;
 double zoomFactor = 1.0;
 
 long previousTime = 0;
+long previousSecondTime = 0;
 int FPSCounter = 0;
 int emissionFrameCount = 0;
 
@@ -254,12 +255,13 @@ void dataTracker() {
     // Time per frame vs particles data
     frameData.emplace_back(to_string(changeInTime) + "," + to_string(particles.size()));
 
-    if (seconds >= (previousTime / 1000)) {
+    previousTime = t;
+    if (seconds >= previousSecondTime) {
         // Frames per second vs particles data
         fpsData.emplace_back(to_string(FPSCounter) + "," + to_string(particles.size()));
 
         FPSCounter = 0;
-        previousTime = t;
+        previousSecondTime = seconds;
 
     }
 
@@ -278,8 +280,6 @@ void tick(int x) {
     emitShape();
 
     glutPostRedisplay();
-
-    dataTracker();
 
     glutTimerFunc(1000.0/targetFPS, tick, 0);
 }
