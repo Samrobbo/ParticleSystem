@@ -35,24 +35,24 @@ Triple colour = Triple(1, 0, 0);
 double initialPower = 1;
 double gravity = -0.13;
 double wind = 0.0;
-enum Shape{FILLED_SQUARE, CIRCLE, SQUARE};
+enum Shape{FILLED_SQUARE, CIRCLE, SQUARE, SINGLE};
 Shape emissionShape = CIRCLE;
 bool renderAsLine = false;
 int shapeDensity = 50;
 int framesPerEmission = 10;
-double zoomFactor = 1.0;
+int emissionFrameCount = 0;
 
+double zoomFactor = 1.0;
 long previousTime = 0;
 long previousSecondTime = 0;
 int FPSCounter = 0;
-int emissionFrameCount = 0;
 
 list<string> fpsData;
 list<string> frameData;
 
 list <Particle> particles;
 
-int targetFPS = 180.0;
+int targetFPS = 60.0;
 
 void drawLine(Particle p) {
     glLineWidth(p.size / 2);
@@ -105,6 +105,9 @@ void keyboard(unsigned char key, int x, int y) {
         case '3':
             emissionShape = SQUARE;
             break;
+        case '4':
+            emissionShape = SINGLE;
+            break;
         case 'c':
             colour = Triple(myRandomPos(), myRandomPos(), myRandomPos());
             break;
@@ -152,8 +155,8 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         case 'e':
             framesPerEmission += 1;
-            if (framesPerEmission > 20) {
-                framesPerEmission = 20;
+            if (framesPerEmission > 100) {
+                framesPerEmission = 100;
             }
             break;
         case 't':
@@ -191,6 +194,20 @@ void keyboard(unsigned char key, int x, int y) {
             if (zoomFactor > 2.5) {
                 zoomFactor = 2.5;
             }
+            break;
+        case 'k':
+        case 'K':
+            if (targetFPS < 100) {
+                targetFPS = 1000;
+            } else {
+                targetFPS = 60;
+            }
+            break;
+        case 'x':
+            targetFPS = 5;
+            break;
+        case 'X':
+            targetFPS = 60;
             break;
         case 32:
             particles.clear();
@@ -243,6 +260,11 @@ void emitShape() {
                     }
                 }
                 break;
+            case SINGLE:
+                if (particles.size() < 2) {
+                    particles.emplace_back(Particle(Triple(4, 8, 0) * initialPower, colour, particleSize, lifetime));
+                }
+                break;
         }
     }
 }
@@ -280,6 +302,7 @@ void tick(int x) {
     emitShape();
 
     glutPostRedisplay();
+
 
     glutTimerFunc(1000.0/targetFPS, tick, 0);
 }
